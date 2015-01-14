@@ -376,7 +376,10 @@ String.prototype.panelsProcessTemplate = function(){
         row: null,
 
         defaults: {
-            weight : 0
+            weight : 0,
+            columns_small: 0,
+            columns_medium: 0,
+            columns_large: 0
         },
 
         /**
@@ -712,10 +715,14 @@ String.prototype.panelsProcessTemplate = function(){
 
             if( this.cells.length === 0 ) {
                 // We're adding the initial cells
-                _.each(cells, function (cellWeight) {
+                _.each(cells, function (cell) {
+
                     // Add the new cell to the row
                     var cell = new panels.model.cell({
-                        weight: cellWeight,
+                        weight: cell.weight,
+                        columns_small: cell.columns_small,
+                        columns_medium: cell.columns_medium,
+                        columns_large: cell.columns_large,
                         collection: thisModel.cells
                     });
                     cell.row = thisModel;
@@ -745,7 +752,10 @@ String.prototype.panelsProcessTemplate = function(){
 
                 // Now we need to change the weights of all the cells
                 this.cells.each(function(cell, i){
-                    cell.set('weight', cells[i]);
+                    cell.set('weight', cells[i].weight);
+                    cell.set('columns_small', cells[i].columns_small)
+                    cell.set('columns_medium', cells[i].columns_medium)
+                    cell.set('columns_large', cells[i].columns_large)
                 });
             }
 
@@ -1088,7 +1098,7 @@ String.prototype.panelsProcessTemplate = function(){
             var row = new panels.model.row( {
                 collection: this.rows
             } );
-            row.setCells( weights );
+            row.setCells( weights ); // MARK
             row.builder = this;
             this.rows.add(row, options);
 
@@ -1114,18 +1124,24 @@ String.prototype.panelsProcessTemplate = function(){
 
             var gi;
             for(var ci = 0; ci < data.grid_cells.length; ci++) {
-                gi = parseInt(data.grid_cells[ci].grid);
+                var cell = data.grid_cells[ci];
+                gi = parseInt(cell.grid);
                 if(typeof rows[gi] === 'undefined') {
                     rows[gi] = [];
                 }
 
-                rows[gi].push( parseFloat( data.grid_cells[ci].weight ) );
+                rows[gi].push({
+                    weight: parseFloat(cell.weight),
+                    columns_small: cell.columns_small,
+                    columns_medium: cell.columns_medium,
+                    columns_large: cell.columns_large,
+                });
             }
 
             var builderModel = this;
             _.each( rows, function(row, i){
                 // This will create and add the row model and its cells
-                var newRow = builderModel.addRow( row, { noAnimate: true } );
+                var newRow = builderModel.addRow( row, { noAnimate: true } ); // MARK
 
                 if( typeof data.grids[i].style !== 'undefined' ) {
                     newRow.set( 'style', data.grids[i].style );
@@ -1202,7 +1218,10 @@ String.prototype.panelsProcessTemplate = function(){
                     // Add the cell info
                     data.grid_cells.push( {
                         grid: ri,
-                        weight: cell.get('weight')
+                        weight: cell.get('weight'),
+                        columns_small: cell.get('columns_small'),
+                        columns_medium: cell.get('columns_medium'),
+                        columns_large: cell.get('columns_large')
                     } );
 
                 });
@@ -1487,7 +1506,7 @@ String.prototype.panelsProcessTemplate = function(){
          * Set the field that's used to store the data
          * @param field
          */
-        setDataField: function(field, options){
+        setDataField: function(field, options){ // MARK
             options = _.extend({
                 load: true
             }, options);
@@ -2844,7 +2863,24 @@ String.prototype.panelsProcessTemplate = function(){
 
             // Changing the row
             'change .row-set-form > *': 'setCellsFromForm',
-            'click .row-set-form button.set-row': 'setCellsFromForm'
+            'click .row-set-form button.set-row': 'setCellsFromForm',
+
+            // Blue the columns field
+            // iamota TODO
+            'change .so-column-field': 'setColumnsHandler'
+        },
+
+        /**
+         * Update columns on model
+         */
+        setColumnsHandler: function(e) {
+
+            // clicked elements value
+            var name = e.target.name;
+            var value = parseInt(e.target.value);
+            var parentCell = $(e.target).parents('.preview-cell');
+            var cellIndex = $('.preview-cell').index(parentCell);
+            this.row.cells[cellIndex][name] = value;
         },
 
         dialogClass : 'so-panels-dialog-row-edit',
@@ -2933,11 +2969,15 @@ String.prototype.panelsProcessTemplate = function(){
             if( this.model === null ) {
                 return this;
             }
-
             // Set the rows to be a copy of the model
             this.row = {
-                cells: this.model.cells.map( function(cell){
-                    return cell.get('weight');
+                cells: this.model.cells.map( function(cell){ //
+                    return {
+                        weight: cell.get('weight'),
+                        columns_small: cell.get('columns_small'),
+                        columns_medium: cell.get('columns_medium'),
+                        columns_large: cell.get('columns_large')
+                    }
                 } ),
                 style: { }
             };
@@ -2961,7 +3001,13 @@ String.prototype.panelsProcessTemplate = function(){
 
             // Represent the cells
             _.each(this.row.cells, function(cell, i){
-                var newCell = $( this.cellPreviewTemplate( { weight: cell } ) );
+
+                var newCell = $( this.cellPreviewTemplate({
+                    weight: cell.weight,
+                    columns_large: cell.columns_large,
+                    columns_medium: cell.columns_medium,
+                    columns_small: cell.columns_small
+                }) );
                 rowPreview.append( newCell );
 
                 var prevCell = newCell.prev();
@@ -3050,6 +3096,7 @@ String.prototype.panelsProcessTemplate = function(){
                 }
 
                 // Make this row weight click editable
+                // TODO: strip this out maybe... Really don't want it?
                 newCell.find('.preview-cell-weight').click(function(ci){
 
                     // Disable the draggable while entering values
@@ -3218,20 +3265,34 @@ String.prototype.panelsProcessTemplate = function(){
             // Now, lets create some cells
             var currentWeight = 1;
             for( var i = 0; i < f.cells; i++ ) {
-                cells.push (currentWeight);
+                cells.push ({
+                    weight: currentWeight,
+                    columns_small: 12,
+                    columns_medium: 6,
+                    columns_large: currentWeight
+                });
                 currentWeight *= f.ratio;
             }
 
             // Now lets make sure that the row weights add up to 1
 
-            var totalRowWeight = _.reduce( cells, function(memo, weight){ return memo + weight; });
-            cells = _.map(cells, function(cell){
-                return cell/totalRowWeight;
+            var totalRowWeight = _.reduce( cells, function(memo, cell){
+                return memo + cell.weight;
+            }, 0);
+
+            var oldCells = this.row.cells;
+            cells = _.map(cells, function(cell, i){
+                return {
+                    weight: cell.weight/totalRowWeight,
+                    columns_small: cell.columns_small,
+                    columns_medium: cell.columns_medium,
+                    columns_large: 12/totalRowWeight
+                }
             });
 
             // Don't return cells that are too small
             cells = _.filter(cells, function(cell){
-                return cell > 0.01;
+                return cell.weight > 0.01;
             });
 
             if(f.direction === 'left') {
