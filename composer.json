@@ -1,0 +1,8 @@
+{
+	"name": "iamota/page-builder",
+	"description": "Backend interface for laying out pages into rows/columns",
+	"type": "wordpress-plugin",
+	"require": {
+		"composer/installers": "~1.0"
+	}
+}

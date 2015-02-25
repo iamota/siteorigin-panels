@@ -253,7 +253,8 @@ $layouts = apply_filters( 'siteorigin_panels_prebuilt_layouts', array() );
 				<strong>
 					<?php _e('Set Row Layout') ?>
 				</strong>
-				<input type="number" min="1" max="8" name="cells"  class="so-row-field" value="2" />
+				<input type="number" min="1" max="" name="cells"  class="so-row-field" value="2" />
+
 				<span><?php _e('Columns with Ratio') ?></span>
 				<select name="ratio" class="so-row-field">
 					<option value="1"><?php esc_html_e('Even', 'siteorigin-panels') ?></option>
@@ -304,9 +305,34 @@ $layouts = apply_filters( 'siteorigin_panels_prebuilt_layouts', array() );
 	<div class="preview-cell" style="width: {{%- weight*100 %}}%">
 		<div class="preview-cell-in">
 			<div class="preview-cell-weight">{{% print(Math.round(weight * 1000) / 10) %}}</div>
+			<div class="preview-cell-columns preview-cell-large-columns">
+				<label>Large Columns:</label>
+				<select name="columns_large" class="so-column-field">
+				   {{% for (var i = 1; i <= 12; i++) { %}}
+					   <option value="{{%= i %}}" {{%= (i == columns_large) ? 'selected="selected"' : "" %}}>{{%= i %}}</option>
+				   {{% } %}}
+				</select>
+			</div>
+			<div class="preview-cell-columns preview-cell-medium-columns">
+				<label>Medium Columns:</label>
+				<select name="columns_medium" class="so-column-field">
+				   {{% for (var i = 1; i <= 12; i++) { %}}
+					   <option value="{{%= i %}}" {{%= (i == columns_medium) ? 'selected="selected"' : "" %}}>{{%= i %}}</option>
+				   {{% } %}}
+				</select>
+			</div>
+			<div class="preview-cell-columns preview-cell-small-columns">
+				<label>Small Columns:</label>
+				<select name="columns_small" class="so-column-field">
+				   {{% for (var i = 1; i <= 12; i++) { %}}
+					   <option value="{{%= i %}}" {{%= (i == columns_small) ? 'selected="selected"' : "" %}}>{{%= i %}}</option>
+				   {{% } %}}
+				</select>
+			</div>
 		</div>
 	</div>
 </script>
+
 
 <script type="text/template" id="siteorigin-panels-dialog-prebuilt">
 	<div class="dialog-data">

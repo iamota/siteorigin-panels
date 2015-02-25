@@ -1098,6 +1098,19 @@
   position: relative;
   padding: 0 6px;
 }
+
+.so-panels-dialog.so-panels-dialog-row-edit .so-content .row-preview .preview-cell-columns {
+	padding: 4px 8px;
+}
+.so-panels-dialog.so-panels-dialog-row-edit .so-content .row-preview .preview-cell-columns label {
+	display: block;
+}
+.so-panels-dialog.so-panels-dialog-row-edit .so-content .row-preview .preview-cell-columns select {
+	width: 100%;
+}
+.so-panels-dialog.so-panels-dialog-row-edit .so-content .row-preview .preview-cell-weight {
+	display: none;
+}
 .so-panels-dialog.so-panels-dialog-row-edit .so-content .row-preview .preview-cell .preview-cell-in {
   border: 1px solid #bcccd2;
   min-height: 360px;

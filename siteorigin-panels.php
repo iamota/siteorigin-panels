@@ -3,7 +3,7 @@
 Plugin Name: Page Builder by SiteOrigin
 Plugin URI: http://siteorigin.com/page-builder/
 Description: A drag and drop, responsive page builder that simplifies building your website.
-Version: 2.0.5
+Version: 2.0.4
 Author: SiteOrigin
 Author URI: http://siteorigin.com
 License: GPL3
@@ -11,7 +11,7 @@ License URI: http://www.gnu.org/licenses/gpl.html
 Donate link: http://siteorigin.com/page-builder/#donate
 */
 
-define('SITEORIGIN_PANELS_VERSION', '2.0.5');
+define('SITEORIGIN_PANELS_VERSION', '2.0.4');
 define('SITEORIGIN_PANELS_BASE_FILE', __FILE__);
 
 require_once plugin_dir_path(__FILE__) . 'widgets/basic.php';
@@ -214,7 +214,7 @@ function siteorigin_panels_admin_enqueue_scripts($prefix) {
 
 	if ( ( $screen->base == 'post' && in_array( $screen->id, siteorigin_panels_setting('post-types') ) ) || $screen->base == 'appearance_page_so_panels_home_page' || $screen->base == 'widgets' ) {
 
-		$js_suffix = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
+		$js_suffix = '';
 
 		wp_enqueue_script( 'so-panels-admin', plugin_dir_url(__FILE__) . 'js/siteorigin-panels' . $js_suffix . '.js', array( 'jquery', 'jquery-ui-resizable', 'jquery-ui-sortable', 'jquery-ui-draggable', 'underscore', 'backbone' ), SITEORIGIN_PANELS_VERSION, true );
 		wp_enqueue_script( 'so-panels-admin-styles', plugin_dir_url(__FILE__) . 'js/siteorigin-panels-styles' . $js_suffix . '.js', array( 'jquery', 'underscore', 'backbone', 'wp-color-picker' ), SITEORIGIN_PANELS_VERSION, true );
@@ -846,8 +846,18 @@ function siteorigin_panels_render( $post_id = false, $enqueue_css = true, $panel
 		if( !empty($row_style_wrapper) ) echo $row_style_wrapper;
 
 		foreach ( $cells as $ci => $widgets ) {
+
+			foreach($panels_data['grid_cells'] as $grid_cell) {
+				if($grid_cell['grid'] == $gi) {
+					$large = $grid_cell['columns_large'] ? 'large-' . $grid_cell['columns_large'] : '';
+					$medium = $grid_cell['columns_medium'] ? 'medium-' . $grid_cell['columns_medium'] : '';
+					$small = $grid_cell['columns_small'] ? 'small-' . $grid_cell['columns_small'] : '';
+					break;
+				}
+			}
+
 			// Themes can add their own styles to cells
-			$cell_classes = apply_filters( 'siteorigin_panels_row_cell_classes', array('panel-grid-cell'), $panels_data );
+			$cell_classes = apply_filters( 'siteorigin_panels_row_cell_classes', array('panel-grid-cell', $large, $medium, $small, 'columns'), $panels_data );
 			$cell_attributes = apply_filters( 'siteorigin_panels_row_cell_attributes', array(
 				'class' => implode( ' ', $cell_classes ),
 				'id' => 'pgc-' . $post_id . '-' . $gi  . '-' . $ci
@@ -1161,7 +1171,7 @@ function siteorigin_panels_render_form($widget, $instance = array(), $raw = fals
 				'<div class="panels-missing-widget-form"><p>' .
 				sprintf(
 					__('The widget <strong>%s</strong> is not available. Please try locate and install the missing plugin. Post on the <a href="%s" target="_blank">support forums</a> if you need help.', 'siteorigin-panels'),
-					esc_html($widget),
+					$widget,
 					'http://siteorigin.com/thread/'
 				).
 				'</p></div>';

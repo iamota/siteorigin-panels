@@ -91,9 +91,6 @@ I've tried to ensure that Page Builder is compatible with most plugin widgets. I
 
 == Changelog ==
 
-= 2.0.5 =
-* Added proper escaping in widget form.
-
 = 2.0.4 =
 * Changed how data is json encoded to prevent malformed Page Builder data.
 * Fixed import/export.
